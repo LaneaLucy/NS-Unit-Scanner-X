@@ -286,7 +286,7 @@ default
             else if (m == "STARTUP") { llPlaySound(startup, 0.3); mainMenu(ownerKey); }
             else if (m == "SHUTDOWN") { llPlaySound(shutdown, 0.3); mainMenu(ownerKey); }
             else if (m == "RP") { rpMenu(ownerKey); }
-            else if (m == "next") { customLightBusCommand(); /*mainMenu(ownerKey);*/ }
+            else if (m == "next") { /*customLightBusCommand();*/ llOwnerSay("Still under Developing....."); mainMenu(ownerKey); }
             else {
                 key UUID = getUUID(m);
                 permission(UUID);
