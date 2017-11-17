@@ -1,4 +1,5 @@
-
+integer debugingLevel = 1;
+integer debugType = 1;
 
 key ownerKey;
 integer ownerLightBus;
@@ -30,6 +31,16 @@ string input = "";
 
 integer getChannel(key UUID) {
     return -1-(integer)("0x" + llGetSubString(UUID, -7, -1))+106;
+}
+
+debug(integer debugLevel, string message) {
+    if ((debugLevel==0)&&(debugingLevel==0)) {
+        if (debugType==1) { llOwnerSay("REAL ERROR"); }
+        else if (debugType==2) { llWhisper(PUBLIC_CHANNEL, "REAL ERROR"); }
+    } else if (debugingLevel>=debugLevel) {
+        if (debugType==1) { llOwnerSay("DEBUG: "+message); }
+        else if (debugType==2) { llWhisper(PUBLIC_CHANNEL, "DEBUG: "+message); }
+    }
 }
 
 init() {
@@ -68,7 +79,7 @@ key getUUID(string name) {
 }
 
 permission(key UUID) {
-    llOwnerSay("Asking " + unitName + " for permission.");
+    debug(1, "Asking " + unitName + " for permission.");
     unitLightBus = -1-(integer)("0x" + llGetSubString((string)UUID, -7, -1))+106;
     llListen(unitLightBus, "", NULL_KEY, "");
     //llSay(unitLightBus, "auth scanner " + (string)ownerKey);
@@ -88,7 +99,7 @@ getPort(key UUID) {
     llSay(unitLightBus, "color-q");
     llSay(unitLightBus, "persona-q");
     if (UUID == NULL_KEY) { 
-        llOwnerSay("sending [port-connect data-1]");
+        debug(1, "sending [port-connect data-1]");
         llSay(unitLightBus, "port-connect data-1"); }
     else {
         //llOwnerSay("sending [port-connect " + (string)UUID + "]"); 
@@ -106,7 +117,7 @@ disconnect() {
     busSpam = FALSE;
     llParticleSystem([]);
     llListenControl(listenULB, FALSE);
-    llOwnerSay("Disconnecting scanner.");
+    debug(1, "Disconnecting scanner.");
     llSay(unitLightBus, "port-disconnect data-1");
     llSay(unitLightBus, "remove scanner");
     unitName = "none";
@@ -299,7 +310,7 @@ default
                 string command = m;
                 key UUID = getUUID(m);
                 if (m == "") { command = "internal scanner 0 "+(string)UUID+" send 100 0 who read this, is dumb^^"; }
-                llOwnerSay("Execute: \""+command+"\" on unit's LightBus"/*+" (dont execute anything, still under development)"*/); 
+                debug(1, "Execute: \""+command+"\" on unit's LightBus"/*+" (dont execute anything, still under development)"*/); 
                 llSay(unitLightBus, command);
                 mainMenu(ownerKey); 
             } else { 
@@ -308,17 +319,17 @@ default
         } else if (c == unitLightBus) {
             if (busSpam == TRUE) { llOwnerSay(unitName + " LB: " + m); updateText(m); }
             if (m == "accept " + (string)ownerKey) { llOwnerSay("Connection approved."); llSay(unitLightBus, "add scanner"); getPort(NULL_KEY); }
-            else if (m == "add-confirm") { llOwnerSay("Device added.");  }
-            else if (m == "add-fail") { llOwnerSay("Connection failed."); }
-            else if (m == "remove-confirm") { updateText("Disconnected."); llOwnerSay("Disconnect successful."); }
-            else if (m == "remove-fail") { updateText("Disconnect failed..."); llOwnerSay("Unable to remove."); }
+            else if (m == "add-confirm") { debug(1, "Device added.");  }
+            else if (m == "add-fail") { debug(0, "Connection failed."); }
+            else if (m == "remove-confirm") { updateText("Disconnected."); debug(1, "Disconnect successful."); }
+            else if (m == "remove-fail") { updateText("Disconnect failed..."); debug(0, "Unable to remove."); }
             else if (llGetSubString(m, 0, 8) == "port-real") {
                 key portUUID = (key)llGetSubString(m, 17, -1);
                 connect(portUUID);
             }
             else if (llGetSubString(m, 0, 3) == "port") {
                 key UUID = (key)llGetSubString(m, -36, -1);
-                llOwnerSay("Port forward to: " + (string)UUID);
+                debug(2, "Port forward to: " + (string)UUID);
                 getPort(UUID);
             } else { 
                 processCommand(m); 
@@ -334,9 +345,9 @@ default
         unitCount = d;
         while (x < d) {
             
-            llOwnerSay("Found: " + llDetectedName(x));
+            debug(1, "Found: " + llDetectedName(x));
             string llDialogConformUnitName = llGetSubString(llDetectedName(x), 0, 20);
-            llOwnerSay("Convert it to: " + llDialogConformUnitName);
+            debug(1, "Convert it to: " + llDialogConformUnitName);
             unitList += llDialogConformUnitName;
             //unitList += llDetectedName(x);
             keyList += llDetectedKey(x);
@@ -353,7 +364,20 @@ default
     touch_end(integer d) {
         mainMenu(ownerKey);
     }
-    
+    attach(key id)
+    {
+        if (id)     // is a valid key and not NULL_KEY
+        {
+            debug(1, "I have been attached!");
+            llResetScript();
+        }
+        else
+        {
+            disconnect();
+            debug(1, "I have been detached!");
+            updateText("Disconnecting..."); 
+        }
+    }
     timer() {
         disableListen();
     }
