@@ -286,7 +286,7 @@ default
             else if (m == "STARTUP") { llPlaySound(startup, 0.3); mainMenu(ownerKey); }
             else if (m == "SHUTDOWN") { llPlaySound(shutdown, 0.3); mainMenu(ownerKey); }
             else if (m == "RP") { rpMenu(ownerKey); }
-            else if (m == "next") { /*customLightBusCommand();*/ llOwnerSay("Still under Developing....."); mainMenu(ownerKey); }
+            else if (m == "next") { customLightBusCommand(); /*mainMenu(ownerKey);*/ }
             else {
                 key UUID = getUUID(m);
                 permission(UUID);
@@ -298,7 +298,7 @@ default
                 llOwnerSay("Still under Developing....."); 
                 string command = m;
                 key UUID = getUUID(m);
-                if (m == "") { command = "internal scanner 0 "+(string)UUID+" say this is a test"; }
+                if (m == "") { command = "internal scanner 0 "+(string)UUID+" send 100 0 who read this, is dumb^^"; }
                 llOwnerSay("Execute: \""+command+"\" on unit's LightBus"/*+" (dont execute anything, still under development)"*/); 
                 llSay(unitLightBus, command);
                 mainMenu(ownerKey); 
